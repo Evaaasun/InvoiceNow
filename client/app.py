@@ -2,10 +2,13 @@ from flask import Flask, request, jsonify, render_template
 import os
 import json
 import uuid
+import requests
 
 app = Flask(__name__)
 INVOICE_DIR = "invoices"
 os.makedirs(INVOICE_DIR, exist_ok=True)
+
+AP_PROVIDER_URL = "http://localhost:5001/receive_invoice"
 
 @app.route("/")
 def index():
@@ -127,5 +130,44 @@ def view_invoice(invoice_id):
     with open(path) as f:
         return jsonify(json.load(f))
 
+@app.route("/submit_invoice/<invoice_id>", methods=["POST"])
+def submit_invoice(invoice_id):
+    path = os.path.join(INVOICE_DIR, f"{invoice_id}.json")
+    if not os.path.exists(path):
+        return jsonify({"error": "Invoice not found"}), 404
+    with open(path) as f:
+        invoice_data = json.load(f)
+    try:
+        response = requests.post(AP_PROVIDER_URL, json=invoice_data)
+        return jsonify({"status": response.status_code, "providerResponse": response.json()}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/submit_invoices_batch", methods=["POST"])
+def submit_invoices_batch():
+    invoice_ids = request.json.get("invoiceIds")
+    results = []
+
+    for invoice_id in invoice_ids:
+        path = os.path.join(INVOICE_DIR, f"{invoice_id}.json")
+        if not os.path.exists(path):
+            results.append({invoice_id: "not found"})
+            continue
+
+        with open(path) as f:
+            invoice_data = json.load(f)
+
+        try:
+            response = requests.post(AP_PROVIDER_URL, json=invoice_data)
+            results.append({
+                "invoiceId": invoice_id,
+                "status": response.status_code,
+                "providerResponse": response.json()
+            })
+        except Exception as e:
+            results.append({invoice_id: f"error: {str(e)}"})
+
+    return jsonify(results)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
