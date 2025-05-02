@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice Generator</title>
+</head>
+<body>
+  <h1>Generate a Single Invoice</h1>
+  <form id="invoiceForm">
+    <input id="issueDate" placeholder="Issue Date (YYYY-MM-DD)" /><br />
+    <input id="invoiceCurrencyCode" value="SGD" placeholder="Currency Code" /><br />
+
+    <h3>Seller</h3>
+    <input id="sellerElectronicAddress" placeholder="Electronic Address" /><br />
+    <input id="sellerTaxId" placeholder="Tax ID (GST)" /><br />
+    <input id="sellerName" placeholder="Company Name" /><br />
+    <input id="sellerLegalRegistrationId" placeholder="Legal Registration ID" /><br />
+    <input id="sellerTradingName" placeholder="Trading Name" /><br />
+    <input id="sellerAddressLine1" placeholder="Address Line 1" /><br />
+    <input id="sellerPostCode" placeholder="Post Code" /><br />
+    <input id="sellerCountryCode" placeholder="Country Code" value="SG" /><br />
+
+    <h3>Buyer</h3>
+    <input id="buyerElectronicAddress" placeholder="Electronic Address" /><br />
+    <input id="buyerId" placeholder="Buyer ID" /><br />
+    <input id="buyerTradingName" placeholder="Trading Name" /><br />
+    <input id="buyerAddressLine1" placeholder="Address Line 1" /><br />
+    <input id="buyerPostCode" placeholder="Post Code" /><br />
+    <input id="buyerCountryCode" placeholder="Country Code" value="SG" /><br />
+    <input id="buyerName" placeholder="Company Name" /><br />
+    <input id="buyerLegalRegistrationId" placeholder="Legal Registration ID" /><br />
+
+    <h3>Tax</h3>
+    <input id="invoiceTotalTaxAmount" placeholder="Total Tax Amount" /><br />
+    <input id="taxCategoryTaxableAmount" placeholder="Taxable Amount" /><br />
+    <input id="taxAmountPerCategory" placeholder="Tax Amount Per Category" /><br />
+    <input id="taxCategoryRate" placeholder="Tax Rate (%)" value="9" /><br />
+
+    <h3>Amounts</h3>
+    <input id="lineExtensionAmount" placeholder="Line Extension Amount" /><br />
+    <input id="taxExclusiveAmount" placeholder="Tax Exclusive Amount" /><br />
+    <input id="taxInclusiveAmount" placeholder="Tax Inclusive Amount" /><br />
+    <input id="payableAmount" placeholder="Payable Amount" /><br />
+    <button type="button" onclick="submitForm()">Generate Invoice</button>
+  </form>
+  <pre id="result"></pre>
+
+  <h2>View Invoice</h2>
+  <input id="queryId" placeholder="Enter Invoice ID" />
+  <button onclick="viewInvoice()">View</button>
+  <pre id="viewResult"></pre>
+
+  <h2>Upload Batch JSON File</h2>
+  <input type="file" id="batchFile" accept=".json" />
+  <button onclick="uploadBatch()">Upload Batch</button>
+  <pre id="batchResult"></pre>
+
+  <script>
+    async function submitForm() {
+      const ids = [
+        "issueDate", "invoiceCurrencyCode", "sellerElectronicAddress", "sellerTaxId", "sellerName",
+        "sellerLegalRegistrationId", "sellerTradingName", "sellerAddressLine1", "sellerPostCode", "sellerCountryCode",
+        "buyerElectronicAddress", "buyerId", "buyerTradingName", "buyerAddressLine1", "buyerPostCode",
+        "buyerCountryCode", "buyerName", "buyerLegalRegistrationId", "invoiceTotalTaxAmount", "taxCategoryTaxableAmount",
+        "taxAmountPerCategory", "taxCategoryRate", "lineExtensionAmount", "taxExclusiveAmount", "taxInclusiveAmount", "payableAmount"
+      ];
+      const data = {};
+      ids.forEach(id => data[id] = document.getElementById(id).value);
+
+      const res = await fetch("/generate_invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      document.getElementById("result").textContent = JSON.stringify(result, null, 2);
+    }
+
+    async function viewInvoice() {
+      const id = document.getElementById("queryId").value;
+      const res = await fetch("/view_invoices/" + id);
+      const result = await res.json();
+      document.getElementById("viewResult").textContent = JSON.stringify(result, null, 2);
+    }
+
+    async function uploadBatch() {
+      const file = document.getElementById("batchFile").files[0];
+      if (!file) return;
+
+      const text = await file.text();
+      const json = JSON.parse(text);
+
+      const res = await fetch("/generate_invoices_batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json)
+      });
+      const result = await res.json();
+      document.getElementById("batchResult").textContent = JSON.stringify(result, null, 2);
+    }
+  </script>
+</body>
+</html>
+
