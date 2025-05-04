@@ -12,21 +12,16 @@ def home():
 
 @app.route("/receive_invoice", methods=["POST"])
 def receive_invoice():
-    invoice = request.json
-    invoice_id = invoice.get("invoiceId")
-    if not invoice_id:
-        return jsonify({"error": "Missing invoiceId"}), 400
-
-    filename = os.path.join(RECEIVED_DIR, f"{invoice_id}.json")
-    with open(filename, "w") as f:
-        json.dump(invoice, f, indent=2)
-
-    return jsonify({"message": f"Invoice {invoice_id} received successfully"}), 200
-
-@app.route("/receive_invoices_batch", methods=["POST"])
-def receive_invoices_batch():
-    invoices = request.json
+    data = request.json
     results = []
+
+    # Determine if input is a single invoice (dict) or a list of invoices
+    if isinstance(data, dict):
+        invoices = [data]
+    elif isinstance(data, list):
+        invoices = data
+    else:
+        return jsonify({"error": "Invalid data format"}), 400
 
     for invoice in invoices:
         invoice_id = invoice.get("invoiceId")
@@ -40,7 +35,8 @@ def receive_invoices_batch():
 
         results.append({"invoiceId": invoice_id, "status": "stored"})
 
-    return jsonify(results), 200
+    # Return single object if only one invoice processed
+    return jsonify(results if len(results) > 1 else results[0]), 200
 
 @app.route("/view_received/<invoice_id>", methods=["GET"])
 def view_received_invoice(invoice_id):

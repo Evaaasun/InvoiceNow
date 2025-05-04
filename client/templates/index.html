@@ -33,7 +33,7 @@
     <h3>Tax</h3>
     <input id="invoiceTotalTaxAmount" placeholder="Total Tax Amount" /><br />
     <input id="taxCategoryTaxableAmount" placeholder="Taxable Amount" /><br />
-    <input id="taxAmountPerCategory" placeholder="Tax Amount Per Category" /><br />
+    <input id="taxCategoryTaxAmount" placeholder="Tax Amount Per Category" /><br />
     <input id="taxCategoryRate" placeholder="Tax Rate (%)" value="9" /><br />
 
     <h3>Amounts</h3>
@@ -62,7 +62,7 @@
         "sellerLegalRegistrationId", "sellerTradingName", "sellerAddressLine1", "sellerPostCode", "sellerCountryCode",
         "buyerElectronicAddress", "buyerId", "buyerTradingName", "buyerAddressLine1", "buyerPostCode",
         "buyerCountryCode", "buyerName", "buyerLegalRegistrationId", "invoiceTotalTaxAmount", "taxCategoryTaxableAmount",
-        "taxAmountPerCategory", "taxCategoryRate", "lineExtensionAmount", "taxExclusiveAmount", "taxInclusiveAmount", "payableAmount"
+        "taxCategoryTaxAmount", "taxCategoryRate", "lineExtensionAmount", "taxExclusiveAmount", "taxInclusiveAmount", "payableAmount"
       ];
       const data = {};
       ids.forEach(id => data[id] = document.getElementById(id).value);
