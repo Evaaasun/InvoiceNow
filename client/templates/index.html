@@ -7,26 +7,34 @@
 <body>
   <h1>Generate a Single Invoice</h1>
   <form id="invoiceForm">
+    <input id="invoiceId" placeholder="Invoice ID (e.g. INV-20250501-001)" /><br />
+    <input id="uuid" placeholder="UUID (optional, auto-generated if empty)" /><br />
+    <input id="customizationId" placeholder="Customization ID" value="SGPeppol" /><br />
+    <input id="profileId" placeholder="Profile ID" value="invoice" /><br />
     <input id="issueDate" placeholder="Issue Date (YYYY-MM-DD)" /><br />
+    <input id="invoiceTypeCode" placeholder="Invoice Type Code" value="380" /><br />
     <input id="invoiceCurrencyCode" value="SGD" placeholder="Currency Code" /><br />
 
     <h3>Seller</h3>
     <input id="sellerElectronicAddress" placeholder="Electronic Address" /><br />
+    <input id="sellerAddressSchemeId" value="0195" placeholder="Address Scheme ID" /><br />
     <input id="sellerTaxId" placeholder="Tax ID (GST)" /><br />
+    <input id="taxSchemeId" value="GST" placeholder="Tax Scheme ID" /><br />
     <input id="sellerName" placeholder="Company Name" /><br />
     <input id="sellerLegalRegistrationId" placeholder="Legal Registration ID" /><br />
     <input id="sellerTradingName" placeholder="Trading Name" /><br />
     <input id="sellerAddressLine1" placeholder="Address Line 1" /><br />
     <input id="sellerPostCode" placeholder="Post Code" /><br />
-    <input id="sellerCountryCode" placeholder="Country Code" value="SG" /><br />
+    <input id="sellerCountryCode" value="SG" placeholder="Country Code" /><br />
 
     <h3>Buyer</h3>
     <input id="buyerElectronicAddress" placeholder="Electronic Address" /><br />
+    <input id="buyerAddressSchemeId" value="0195" placeholder="Address Scheme ID" /><br />
     <input id="buyerId" placeholder="Buyer ID" /><br />
     <input id="buyerTradingName" placeholder="Trading Name" /><br />
     <input id="buyerAddressLine1" placeholder="Address Line 1" /><br />
     <input id="buyerPostCode" placeholder="Post Code" /><br />
-    <input id="buyerCountryCode" placeholder="Country Code" value="SG" /><br />
+    <input id="buyerCountryCode" value="SG" placeholder="Country Code" /><br />
     <input id="buyerName" placeholder="Company Name" /><br />
     <input id="buyerLegalRegistrationId" placeholder="Legal Registration ID" /><br />
 
@@ -34,13 +42,26 @@
     <input id="invoiceTotalTaxAmount" placeholder="Total Tax Amount" /><br />
     <input id="taxCategoryTaxableAmount" placeholder="Taxable Amount" /><br />
     <input id="taxCategoryTaxAmount" placeholder="Tax Amount Per Category" /><br />
-    <input id="taxCategoryRate" placeholder="Tax Rate (%)" value="9" /><br />
+    <input id="taxCategoryCode" value="SR" placeholder="Tax Category Code" /><br />
+    <input id="taxCategoryRate" value="9" placeholder="Tax Rate (%)" /><br />
 
     <h3>Amounts</h3>
     <input id="lineExtensionAmount" placeholder="Line Extension Amount" /><br />
     <input id="taxExclusiveAmount" placeholder="Tax Exclusive Amount" /><br />
     <input id="taxInclusiveAmount" placeholder="Tax Inclusive Amount" /><br />
     <input id="payableAmount" placeholder="Payable Amount" /><br />
+
+    <h3>Item Line</h3>
+    <input id="invoiceLineIdentifier" placeholder="Line ID" /><br />
+    <input id="invoicedQuantity" placeholder="Quantity" /><br />
+    <input id="invoicedQuantityUnitOfMeasure" value="EA" placeholder="Unit of Measure" /><br />
+    <input id="invoiceLineNetAmount" placeholder="Line Net Amount" /><br />
+    <input id="itemName" placeholder="Item Name" /><br />
+    <input id="invoicedItemTaxCategoryCode" value="SR" placeholder="Item Tax Category Code" /><br />
+    <input id="invoicedItemTaxRate" value="9.0" placeholder="Item Tax Rate" /><br />
+    <input id="itemTaxScheme" value="GST" placeholder="Item Tax Scheme" /><br />
+    <input id="itemNetPrice" placeholder="Item Net Price" /><br />
+
     <button type="button" onclick="submitForm()">Generate Invoice</button>
   </form>
   <pre id="result"></pre>
@@ -58,14 +79,25 @@
   <script>
     async function submitForm() {
       const ids = [
-        "issueDate", "invoiceCurrencyCode", "sellerElectronicAddress", "sellerTaxId", "sellerName",
-        "sellerLegalRegistrationId", "sellerTradingName", "sellerAddressLine1", "sellerPostCode", "sellerCountryCode",
-        "buyerElectronicAddress", "buyerId", "buyerTradingName", "buyerAddressLine1", "buyerPostCode",
-        "buyerCountryCode", "buyerName", "buyerLegalRegistrationId", "invoiceTotalTaxAmount", "taxCategoryTaxableAmount",
-        "taxCategoryTaxAmount", "taxCategoryRate", "lineExtensionAmount", "taxExclusiveAmount", "taxInclusiveAmount", "payableAmount"
+        "customizationId", "profileId", "invoiceId", "uuid", "issueDate", "invoiceTypeCode", "invoiceCurrencyCode",
+        "sellerElectronicAddress", "sellerAddressSchemeId", "sellerTaxId", "taxSchemeId", "sellerName", "sellerLegalRegistrationId",
+        "sellerTradingName", "sellerAddressLine1", "sellerPostCode", "sellerCountryCode",
+        "buyerElectronicAddress", "buyerAddressSchemeId", "buyerId", "buyerTradingName", "buyerAddressLine1",
+        "buyerPostCode", "buyerCountryCode", "buyerName", "buyerLegalRegistrationId",
+        "invoiceTotalTaxAmount", "taxCategoryTaxableAmount", "taxCategoryTaxAmount", "taxCategoryCode", "taxCategoryRate",
+        "lineExtensionAmount", "taxExclusiveAmount", "taxInclusiveAmount", "payableAmount",
+        "invoiceLineIdentifier", "invoicedQuantity", "invoicedQuantityUnitOfMeasure", "invoiceLineNetAmount",
+        "itemName", "invoicedItemTaxCategoryCode", "invoicedItemTaxRate", "itemTaxScheme", "itemNetPrice"
       ];
       const data = {};
-      ids.forEach(id => data[id] = document.getElementById(id).value);
+      ids.forEach(id => {
+        const value = document.getElementById(id).value;
+        if (value) data[id] = value;
+      });
+
+      if (!data.uuid) {
+        data.uuid = crypto.randomUUID();
+      }
 
       const res = await fetch("/generate_invoice", {
         method: "POST",

@@ -1,8 +1,8 @@
 {
   "customizationId": "SGPeppol",
   "profileId": "invoice",
-  "invoiceId": "INV-8D63CC55",
-  "uuid": "e28ae8a9-9581-482b-a581-fd8a6ac48808",
+  "invoiceId": "INV-20250502-002",
+  "uuid": "a16f6a00-3602-4e13-b0fd-4734e1dab3cf",
   "issueDate": "2025-05-02",
   "invoiceTypeCode": "380",
   "invoiceCurrencyCode": "SGD",
@@ -33,5 +33,14 @@
   "lineExtensionAmount": 1666.67,
   "taxExclusiveAmount": 1666.67,
   "taxInclusiveAmount": 1816.67,
-  "payableAmount": 1816.67
+  "payableAmount": 1816.67,
+  "invoiceLineIdentifier": "1",
+  "invoicedQuantity": 1.0,
+  "invoicedQuantityUnitOfMeasure": "EA",
+  "invoiceLineNetAmount": 1666.67,
+  "itemName": "Enterprise Server License",
+  "invoicedItemTaxCategoryCode": "SR",
+  "invoicedItemTaxRate": 9.0,
+  "itemTaxScheme": "GST",
+  "itemNetPrice": 1666.67
 }

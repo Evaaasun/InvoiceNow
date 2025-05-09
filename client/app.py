@@ -15,22 +15,22 @@ def index():
     return render_template("index.html")
 
 def build_and_save_invoice(data):
-    invoice_id = data.get("invoiceId", f"INV-{uuid.uuid4().hex[:8].upper()}")
+    invoice_id = data["invoiceId"]
     filename = os.path.join(INVOICE_DIR, f"{invoice_id}.json")
-    
+
     invoice = {
-        "customizationId": "SGPeppol",
-        "profileId": "invoice",
+        "customizationId": data.get("customizationId", "SGPeppol"),
+        "profileId": data.get("profileId", "invoice"),
         "invoiceId": invoice_id,
         "uuid": str(uuid.uuid4()),
         "issueDate": data["issueDate"],
-        "invoiceTypeCode": "380",
+        "invoiceTypeCode": data.get("invoiceTypeCode", "380"),
         "invoiceCurrencyCode": data["invoiceCurrencyCode"],
 
         "sellerElectronicAddress": data["sellerElectronicAddress"],
-        "sellerAddressSchemeId": "0195",
+        "sellerAddressSchemeId": data.get("sellerAddressSchemeId", "0195"),
         "sellerTaxId": data["sellerTaxId"],
-        "taxSchemeId": "GST",
+        "taxSchemeId": data.get("taxSchemeId", "GST"),
         "sellerName": data["sellerName"],
         "sellerLegalRegistrationId": data["sellerLegalRegistrationId"],
         "sellerTradingName": data["sellerTradingName"],
@@ -39,7 +39,7 @@ def build_and_save_invoice(data):
         "sellerCountryCode": data["sellerCountryCode"],
 
         "buyerElectronicAddress": data["buyerElectronicAddress"],
-        "buyerAddressSchemeId": "0195",
+        "buyerAddressSchemeId": data.get("buyerAddressSchemeId", "0195"),
         "buyerId": data["buyerId"],
         "buyerTradingName": data["buyerTradingName"],
         "buyerAddressLine1": data["buyerAddressLine1"],
@@ -51,14 +51,23 @@ def build_and_save_invoice(data):
         "invoiceTotalTaxAmount": float(data["invoiceTotalTaxAmount"]),
         "taxCategoryTaxableAmount": float(data["taxCategoryTaxableAmount"]),
         "taxCategoryTaxAmount": float(data["taxCategoryTaxAmount"]),
-        "taxCategoryCode": "SR",
-        "taxSchemeId": "GST",
+        "taxCategoryCode": data.get("taxCategoryCode", "SR"),
         "taxCategoryRate": float(data["taxCategoryRate"]),
 
         "lineExtensionAmount": float(data["lineExtensionAmount"]),
         "taxExclusiveAmount": float(data["taxExclusiveAmount"]),
         "taxInclusiveAmount": float(data["taxInclusiveAmount"]),
-        "payableAmount": float(data["payableAmount"])
+        "payableAmount": float(data["payableAmount"]),
+
+        "invoiceLineIdentifier": data["invoiceLineIdentifier"],
+        "invoicedQuantity": float(data["invoicedQuantity"]),
+        "invoicedQuantityUnitOfMeasure": data["invoicedQuantityUnitOfMeasure"],
+        "invoiceLineNetAmount": float(data["invoiceLineNetAmount"]),
+        "itemName": data["itemName"],
+        "invoicedItemTaxCategoryCode": data["invoicedItemTaxCategoryCode"],
+        "invoicedItemTaxRate": float(data["invoicedItemTaxRate"]),
+        "itemTaxScheme": data["itemTaxScheme"],
+        "itemNetPrice": float(data["itemNetPrice"])
     }
 
     with open(filename, "w") as f:
@@ -109,7 +118,7 @@ def submit_invoices_batch():
     for invoice_id in invoice_ids:
         path = os.path.join(INVOICE_DIR, f"{invoice_id}.json")
         if not os.path.exists(path):
-            results.append({invoice_id: "not found"})
+            results.append({"invoiceId": invoice_id, "status": "not found"})
             continue
 
         with open(path) as f:
@@ -123,7 +132,7 @@ def submit_invoices_batch():
                 "providerResponse": response.json()
             })
         except Exception as e:
-            results.append({invoice_id: f"error: {str(e)}"})
+            results.append({"invoiceId": invoice_id, "status": "error", "message": str(e)})
 
     return jsonify(results)
 
